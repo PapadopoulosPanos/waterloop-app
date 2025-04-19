@@ -51,7 +51,7 @@ export default async function AuthButton() {
     );
   }
   return user ? (
-    <div className="flex items-center gap-4">
+    <div className="hidden md:flex items-center gap-4">
       Hey, {user.email}!
       <ThemeSwitcher />
       <form action={signOutAction}>
