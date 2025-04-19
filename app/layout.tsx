@@ -7,10 +7,19 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
-import { Copyright, Instagram, Mail, School } from "lucide-react";
+import { Copyright, Instagram, Mail, MoreVertical, School } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import Logo from "@/app/WaterLoop-logo-symbol.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { signOutAction } from "./actions";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -51,7 +60,48 @@ export default async function RootLayout({
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
                 <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                  <div className="flex gap-5 items-center font-semibold">
+                  <div className="flex md:hidden items-center gap-2 justify-between">
+                    <Link
+                      className="text-xl flex items-center gap-2"
+                      href={"/"}
+                    >
+                      <Image src={Logo} height={50} alt="logo" />
+                      Waterloop
+                    </Link>
+                    {user && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost">
+                            <MoreVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuItem>
+                            <Link href="/dashboard">Dashboard</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link href="/dashboard/devices">Devices</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link href="/dashboard/alerts">Alerts</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            <form action={signOutAction}>
+                              <Button
+                                type="submit"
+                                variant="ghost"
+                                className="p-0 hover:bg-transparent m-0"
+                              >
+                                Sign out
+                              </Button>
+                            </form>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                  <div className="hidden md:flex gap-5 items-center font-semibold">
                     <Link
                       className="text-xl flex items-center gap-2"
                       href={"/"}
@@ -77,7 +127,7 @@ export default async function RootLayout({
               {/* <div className="flex flex-col gap-20 max-w-5xl p-5"> */}
               <div className="max-w-5xl w-full px-5 py-0">{children}</div>
 
-              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-8">
+              <footer className="w-full flex flex-col md:flex-row items-center justify-center border-t mx-auto text-center text-xs gap-8 py-8">
                 <p>
                   Powered by{" "}
                   <a
@@ -89,7 +139,7 @@ export default async function RootLayout({
                     Supabase
                   </a>
                 </p>
-                <p>|</p>
+                <p className="hidden md:block">|</p>
                 <p>
                   Developed by{" "}
                   <a
@@ -101,7 +151,7 @@ export default async function RootLayout({
                     Panos Papadopoulos
                   </a>
                 </p>
-                <p>|</p>
+                <p className="hidden md:block">|</p>
                 <p className="flex items-center gap-2">
                   <a
                     href="https://waterloopwrs.tilda.ws/"
@@ -115,7 +165,7 @@ export default async function RootLayout({
                     {<Copyright size={12} />} {new Date().getFullYear()}
                   </span>
                 </p>
-                <p>|</p>
+                <p className="hidden md:block">|</p>
                 <p className="flex items-center gap-2">
                   {<Instagram size={12} />}
                   <a
@@ -127,7 +177,7 @@ export default async function RootLayout({
                     @waterloop.wrs
                   </a>
                 </p>
-                <p>|</p>
+                <p className="hidden md:block">|</p>
                 <p className="flex items-center gap-2">
                   {<Mail size={12} />}
                   <a
@@ -139,7 +189,7 @@ export default async function RootLayout({
                     waterloopteam2024@gmail.com
                   </a>
                 </p>
-                <p>|</p>
+                <p className="hidden md:block">|</p>
                 <p className="flex items-center gap-2">
                   {<School size={12} />}
                   <a
