@@ -4,6 +4,8 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -15,7 +17,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/sign-up",
-      "Email and password are required",
+      "Email and password are required"
     );
   }
 
@@ -34,7 +36,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect(
       "success",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
+      "Thanks for signing up! Please check your email for a verification link."
     );
   }
 };
@@ -53,7 +55,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect("/dashboard");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -75,7 +77,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/forgot-password",
-      "Could not reset password",
+      "Could not reset password"
     );
   }
 
@@ -86,7 +88,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     "/forgot-password",
-    "Check your email for a link to reset your password.",
+    "Check your email for a link to reset your password."
   );
 };
 
@@ -100,7 +102,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password and confirm password are required",
+      "Password and confirm password are required"
     );
   }
 
@@ -108,7 +110,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Passwords do not match",
+      "Passwords do not match"
     );
   }
 
@@ -120,7 +122,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password update failed",
+      "Password update failed"
     );
   }
 
@@ -130,5 +132,64 @@ export const resetPasswordAction = async (formData: FormData) => {
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  return redirect("/sign-in");
+  return redirect("/");
 };
+
+export const addDeviceAction = async (data: FormData) => {
+  const client = await createClient();
+
+  const isAuthenticated = authGuard(client);
+  if (!isAuthenticated) return redirect("/sign-in");
+
+  const typeId = data.get("typeId");
+  const name = data.get("name");
+
+  const model = {
+    name: name?.toString(),
+    typeId: parseInt(typeId?.toString() ?? "1"),
+  };
+
+  await client.from("Devices").insert(model);
+
+  revalidatePath("/dashboard/devices");
+  revalidatePath("/dashboard");
+
+  return redirect("/dashboard/devices");
+};
+
+export const updateDeviceAction = async (data: FormData) => {
+  const client = await createClient();
+
+  const isAuthenticated = authGuard(client);
+  if (!isAuthenticated) return redirect("/sign-in");
+
+  const id = data.get("id");
+  const name = data.get("name");
+
+  const model = {
+    id: parseInt(id?.toString() ?? "0"),
+    name: name?.toString(),
+  };
+
+  console.log(model);
+
+  const { error } = await client
+    .from("Devices")
+    .update(model)
+    .eq("id", id?.toString());
+
+  console.log(error);
+
+  revalidatePath("/dashboard/devices");
+  revalidatePath("/dashboard");
+
+  return redirect("/dashboard/devices");
+};
+
+const authGuard = async (client: SupabaseClient<any, "public", any>) => {
+  const { error } = await client.auth.getUser();
+  if (error) return false;
+
+  return true;
+};
+
