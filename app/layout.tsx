@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { signOutAction } from "./actions";
 import Chatbot from "@/components/chat-bot";
 
+
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
