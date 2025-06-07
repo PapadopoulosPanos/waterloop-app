@@ -231,6 +231,7 @@ export async function processAiMessage(
     try {
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
+        // @ts-expect-error
         messages: aiMessages,
         // tools: [],
         max_completion_tokens: 500,
