@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "./actions";
+import Chatbot from "@/components/chat-bot";
+
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -56,6 +58,8 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {user && <Chatbot />}
+
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
@@ -210,4 +214,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

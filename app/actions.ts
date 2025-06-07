@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { type SupabaseClient } from "@supabase/supabase-js";
+import OpenAI from "openai";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -191,5 +192,80 @@ const authGuard = async (client: SupabaseClient<any, "public", any>) => {
   if (error) return false;
 
   return true;
+};
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const systemMessage: AiState = {
+  role: "system",
+  content: `You are a helpful water consumption assistant that provide short answers. 
+  Only use provided functions. You help people with questions about their water consumption and how to minimize them. 
+  If a user asks for something other than what you can provide, 
+  please politely reply that you can't help with that.`,
+};
+
+const aiMessages: AiState[] = [systemMessage];
+
+export async function processAiMessage(
+  prevState: AiState[],
+  formData: FormData
+) {
+  const userMessage = formData.get("message")?.toString().trim();
+
+  const clear = formData.get("clear")?.toString();
+
+  if (clear === "true") {
+    aiMessages.splice(1, aiMessages.length);
+    return aiMessages;
+  }
+
+  aiMessages.push({
+    role: "user",
+    content: userMessage!,
+  });
+
+  // we will use a loop in case we need to provide some functions to the ai agent
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        // @ts-expect-error
+        messages: aiMessages,
+        // tools: [],
+        max_completion_tokens: 500,
+      });
+
+      const { finish_reason, message } = response.choices[0];
+
+      if (finish_reason === "tool_calls" && message.tool_calls) {
+      } else if (finish_reason === "stop") {
+        aiMessages.push({
+          role: "system",
+          content: message.content!,
+        });
+
+        return aiMessages;
+      }
+    } catch (err: any) {
+      if (err.code === "insufficient_quota") {
+        aiMessages.push({
+          role: "system",
+          content:
+            "I'm sorry, i can't help you right now.<br/><p class='text-sm text-muted-foreground font-semibold'>(Reason: Q-404)</p>",
+        });
+      }
+      return aiMessages;
+    }
+  }
+
+  return aiMessages;
+}
+
+export type AiState = {
+  role?: string;
+  content: string;
+  name?: string;
 };
 
