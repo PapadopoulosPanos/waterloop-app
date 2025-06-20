@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Bot, Loader, Loader2, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { type AiState, processAiMessage } from "@/app/actions";
+import { Textarea } from "./ui/textarea";
 
 function Message({ message }: { message: AiState }) {
   if (message.role === "function") return null;
@@ -45,7 +46,7 @@ function Chatbot() {
   return (
     <div className="fixed md:bottom-4 md:right-4 z-50 right-0 bottom-0">
       {open ? (
-        <div className="w-screen h-screen md:w-[420px] md:h-[600px] shadow-lg rounded-lg flex flex-col bg-black border-gray-900 border">
+        <div className="w-screen h-screen md:w-[420px] md:h-[750px] shadow-lg rounded-lg flex flex-col bg-black border-gray-900 border">
           <div className="flex justify-between items-center p-4 border-b text-white bg-black rounded-t-lg">
             <h2 className="text-lg font-semibold">AI Assistant</h2>
             <Button
@@ -65,7 +66,7 @@ function Chatbot() {
                   <div
                     className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <Message key={index} message={message} />
+                    <Message key={`${index}_${message}`} message={message} />
                   </div>
                 ))}
           </div>
@@ -74,11 +75,11 @@ function Chatbot() {
               action={formActionProcessMessage}
               className="flex flex-col space-y-2"
             >
-              <Input
+              <Textarea
                 disabled={isPending}
                 className="w-full p-2 border rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0"
-                type="text"
                 placeholder="Ask AI assistant"
+                rows={2}
                 name="message"
               />
               <Button type="submit" disabled={isPending}>

@@ -201,9 +201,8 @@ const openai = new OpenAI({
 const systemMessage: AiState = {
   role: "system",
   content: `You are a helpful water consumption assistant that provide short answers. 
-  Only use provided functions. You help people with questions about their water consumption and how to minimize them. 
-  If a user asks for something other than what you can provide, 
-  please politely reply that you can't help with that.`,
+  Only use provided functions. You help people with questions regarding water consumption and recycling and how to minimize cost around it, also you can provide data for water. 
+  . Also answer only with html or plain text.`,
 };
 
 const aiMessages: AiState[] = [systemMessage];
@@ -249,6 +248,7 @@ export async function processAiMessage(
         return aiMessages;
       }
     } catch (err: any) {
+      console.log(err);
       if (err.code === "insufficient_quota") {
         aiMessages.push({
           role: "system",
